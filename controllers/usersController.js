@@ -1,5 +1,5 @@
 const userStorage = require('../storages/userStorage');
-const { body, validationRelax } = require('express-validator');
+const { body, validationRelax, validationResult } = require('express-validator');
 
 let alphaErr ="Must only contain letters"
 let legthErr ="Must be between 1-10 characters"
@@ -26,8 +26,19 @@ exports.userCreateGet  = (req, res) => {
     });
 };
 
-exports.userCreatePost = (req, res) => {
-    const {firstName, lastName} = req.body;
-    userStorage.addUser({firstName, lastName});
-    res.redirect('/')
-};
+exports.userCreatePost =[
+    validateUser,
+    (req, res) => {
+        const errors = validationResult(req);
+        if(!errors.isEmpty()) {
+            return res.status(400).render("createUser", {
+                title: "Create User",
+                errors: errors.array()
+            })
+        };
+
+        const {firstName, lastName} = req.body;
+        userStorage.addUser({firstName, lastName});
+        res.redirect('/')
+    }
+] 
